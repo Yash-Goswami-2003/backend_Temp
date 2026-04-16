@@ -42,5 +42,7 @@ const startServer = async () => {
   }
 };
 
-startServer();
+// startServer();
+
+module.exports = (req, res) => app(req, res);
 
