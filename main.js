@@ -9,8 +9,7 @@ const MongoGateway = require('./gateways/MongoGateway');
 const app = express();
 
 app.use(cors({
-  origin: 'https://frontend-temp-flax.vercel.app',
-  credentials: true,
+  origin: '*',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
