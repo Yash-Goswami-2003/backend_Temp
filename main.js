@@ -30,19 +30,45 @@ app.use('/', configMaster);
 app.use('/app', appRoutes);
 app.use('/db', dbRoutes);
 
-const startServer = async () => {
-  try {
-    await mongoGateway.connect();
-    app.listen(3000, () => {
-      console.log('Server running on port 3000');
-    });
-  } catch (error) {
-    console.error('MongoDB connection failed:', error);
-    process.exit(1);
+let isConnected = false;
+
+const connectToDatabase = async () => {
+  if (!isConnected) {
+    try {
+      await mongoGateway.connect();
+      isConnected = true;
+      console.log('MongoDB connected');
+    } catch (error) {
+      console.error('MongoDB connection failed:', error);
+      throw error;
+    }
   }
 };
 
-// startServer();
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const startServer = async () => {
+    try {
+      await connectToDatabase();
+      app.listen(3000, () => {
+        console.log('Server running on port 3000');
+      });
+    } catch (error) {
+      console.error('Failed to start server:', error);
+      process.exit(1);
+    }
+  };
+  startServer();
+}
 
-module.exports = (req, res) => app(req, res);
+// For Vercel serverless
+module.exports = async (req, res) => {
+  try {
+    await connectToDatabase();
+    return app(req, res);
+  } catch (error) {
+    console.error('Error handling request:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
